@@ -15,11 +15,15 @@ class TraditionalGame extends Model
         'description',
         'how_to_play',
         'cultural_value',
-        'image',
+        'image_url',
     ];
 
     public function region()
     {
         return $this->belongsTo(Region::class);
+    }
+    public function quiz()
+    {
+        return $this->hasOne(Quiz::class);
     }
 }

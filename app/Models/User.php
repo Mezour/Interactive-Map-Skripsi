@@ -2,19 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use HasFactory, Notifiable;
+    use Notifiable;
 
-    /**
-     * Kolom yang boleh diisi (mass assignment)
-     */
     protected $fillable = [
         'name',
         'email',
@@ -22,28 +17,12 @@ class User extends Authenticatable implements JWTSubject
         'role',
     ];
 
-    /**
-     * Kolom yang disembunyikan saat response JSON
-     */
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     /**
-     * Casting atribut
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
-
-    /* ======================
-       JWT REQUIRED METHODS
-       ====================== */
-
-    /**
-     * Return identifier yang akan disimpan di token JWT
+     * Return the identifier that will be stored in the JWT subject claim.
      */
     public function getJWTIdentifier()
     {
@@ -51,10 +30,16 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * Custom claims JWT (opsional)
+     * Return a key value array, containing any custom claims to be added to the JWT.
      */
-    public function getJWTCustomClaims()
+    public function getJWTCustomClaims(): array
     {
         return [];
+    }
+
+    /** Relasi: User → Quiz Results */
+    public function quizResults()
+    {
+        return $this->hasMany(QuizResult::class);
     }
 }

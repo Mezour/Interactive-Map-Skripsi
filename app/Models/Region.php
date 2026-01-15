@@ -13,9 +13,11 @@ class Region extends Model
     protected $guarded = ['id'];
 
     protected $fillable = [
+        'name',
         'province',
-        'latitude',
-        'longitude',
+        'bps_code',
+        // 'latitude',
+        // 'longitude',
     ];
     public function traditionalGames()
     {

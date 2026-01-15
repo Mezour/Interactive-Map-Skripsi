@@ -10,8 +10,9 @@ return new class extends Migration {
         Schema::create('regions', function (Blueprint $table) {
             $table->id();
             $table->string('province');
-            $table->decimal('latitude', 10, 7);
-            $table->decimal('longitude', 10, 7);
+            // $table->decimal('latitude', 10, 7);
+            // $table->decimal('longitude', 10, 7);
+            $table->string('bps_code')->unique()->nullable();
         });
     }
 

@@ -4,41 +4,64 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Region;
+use Illuminate\Support\Facades\File;
 
 class RegionSeeder extends Seeder
 {
     public function run(): void
     {
-        $regions = [
-            [
-                'province' => 'Jawa Barat',
-                'latitude' => -6.914744,
-                'longitude' => 107.609810,
-            ],
-            [
-                'province' => 'Jawa Tengah',
-                'latitude' => -6.993200,
-                'longitude' => 110.420300,
-            ],
-            [
-                'province' => 'DI Yogyakarta',
-                'latitude' => -7.795580,
-                'longitude' => 110.369490,
-            ],
-            [
-                'province' => 'Jawa Timur',
-                'latitude' => -7.250445,
-                'longitude' => 112.768845,
-            ],
-            [
-                'province' => 'Sumatera Barat',
-                'latitude' => -0.947083,
-                'longitude' => 100.417181,
-            ],
-        ];
+        $path = storage_path('app/public/GeoJSON/indonesia-province.geojson');
 
-        foreach ($regions as $region) {
-            Region::create($region);
+        if (!File::exists($path)) {
+            $this->command->error('GeoJSON file not found!');
+            return;
         }
+
+        $geojson = json_decode(File::get($path), true);
+
+        foreach ($geojson['features'] as $feature) {
+            $properties = $feature['properties'];
+            $geometry = $feature['geometry'];
+
+            // Hitung centroid sederhana
+            [$lat, $lng] = $this->calculateCentroid($geometry);
+
+            Region::updateOrCreate(
+                ['bps_code' => $properties['bps_code']],
+                [
+                    'province' => $properties['province'],
+                    'latitude' => $lat,
+                    'longitude' => $lng,
+                ]
+            );
+        }
+    }
+
+    private function calculateCentroid(array $geometry): array
+    {
+        $latSum = 0;
+        $lngSum = 0;
+        $count = 0;
+
+        if ($geometry['type'] === 'Polygon') {
+            $polygons = [$geometry['coordinates']];
+        } elseif ($geometry['type'] === 'MultiPolygon') {
+            $polygons = $geometry['coordinates'];
+        } else {
+            return [0, 0];
+        }
+
+        foreach ($polygons as $polygon) {
+            foreach ($polygon[0] as $point) {
+                $lngSum += $point[0];
+                $latSum += $point[1];
+                $count++;
+            }
+        }
+
+        return [
+            $latSum / $count,
+            $lngSum / $count,
+        ];
     }
 }
